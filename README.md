@@ -1,3 +1,5 @@
+# This addon is not ready for use yet
+
 # Ember-cli-static-pages
 
 This README outlines the details of collaborating on this Ember addon.
