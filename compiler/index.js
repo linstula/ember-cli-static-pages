@@ -48,4 +48,14 @@ Compiler.prototype.registerPartials = function(partialsDirPath) {
   }
 };
 
+Compiler.prototype.compileHTMLFromTemplate = function(filePath) {
+  var templatePath = path.join(this.rootPath + filePath);
+  var templateName = path.basename(templatePath, '.hbs');
+  var templateString = fs.readFileSync(templatePath, 'utf8');
+
+  var template = Handlebars.compile(templateString);
+
+  return template();
+};
+
 module.exports = Compiler;
