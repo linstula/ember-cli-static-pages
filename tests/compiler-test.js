@@ -1,3 +1,5 @@
+/* globals require, QUnit, test */
+
 var Compiler = require('../compiler');
 
 var path = require('path');
