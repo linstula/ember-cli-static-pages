@@ -1,7 +1,7 @@
 {
   "name": "ember-cli-static-pages",
-  "version": "0.0.0",
-  "description": "The default blueprint for ember-cli addons.",
+  "version": "0.0.1",
+  "description": "compile static html files from handlebars templates and serve them along side your ember app.",
   "directories": {
     "doc": "doc",
     "test": "tests"
@@ -11,11 +11,11 @@
     "build": "ember build",
     "test": "ember test"
   },
-  "repository": "",
+  "repository": "https://github.com/linstula/ember-cli-static-pages",
   "engines": {
     "node": ">= 0.10.0"
   },
-  "author": "",
+  "author": "Lin Reid",
   "license": "MIT",
   "devDependencies": {
     "broccoli-asset-rev": "^2.0.0",
@@ -37,12 +37,17 @@
     "qunitjs": "^1.17.1"
   },
   "keywords": [
-    "ember-addon"
+    "ember-addon",
+    "ember-cli",
+    "ember",
+    "static-pages",
+    "html"
   ],
   "ember-addon": {
     "configPath": "tests/dummy/config"
   },
   "dependencies": {
-    "handlebars": "^3.0.0"
+    "handlebars": "^3.0.0",
+    "walk-sync": "^0.1.3"
   }
 }
