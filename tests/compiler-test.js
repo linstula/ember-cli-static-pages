@@ -1,7 +1,7 @@
 /* globals require, QUnit, process */
 
 var Compiler = require('../compiler');
-var handlebars = require('handlebars');
+var Handlebars = require('handlebars');
 var path = require('path');
 
 var module = QUnit.module;
@@ -15,11 +15,19 @@ var helperFixtureFiles = ['nested/nested-helper.js', 'other-helper.js', 'title-h
 var partialFixtureFiles = ['footer.hbs', 'nested/nested-partial.hbs', 'other-partial.hbs'];
 var templateFixtureFiles = ['nested/nested-template.hbs', 'other-template.hbs', 'template-with-partials.hbs', 'template.hbs'];
 
-var Handlebars, appRoot;
+var helperFixtureNames = ['nested/nested-helper', 'other-helper', 'title-helper'];
+var partialFixtureNames = ['footer', 'nested/nested-partial', 'other-partial'];
+
+var appRoot;
+
+function cleanupHandlebarsRegistries() {
+  Handlebars.helpers = {};
+  Handlebars.partials = {};
+}
 
 module('compiler', {
   beforeEach: function() {
-    Handlebars = handlebars;
+    cleanupHandlebarsRegistries();
     appRoot = process.cwd() + '/tests/dummy/';
   }
 });
@@ -32,88 +40,70 @@ test('saves root from constructor param', function(assert) {
   assert.equal(compiler.rootPath, 'some-path/');
 });
 
-test('registerHelper calls Handlebars.registerHelper with the correct arguements', function(assert) {
-  assert.expect(2);
+test('registerHelper registers a helper with Handlebars', function(assert) {
+  assert.expect(1);
 
   var compiler = new Compiler(appRoot);
 
-  Handlebars.registerHelper = function(helperName, helperFunction) {
-    assert.equal(helperName, 'title-helper');
-    assert.equal(typeof helperFunction, 'function');
-  };
-
   compiler.registerHelper(helpersDirPath, 'title-helper.js');
+
+  assert.equal(typeof Handlebars.helpers['title-helper'], 'function', 'registers the helper with Handlebars');
 });
 
 test('registerHelper registers the correct name for a nested helper', function(assert) {
-  assert.expect(2);
+  assert.expect(1);
 
   var compiler = new Compiler(appRoot);
 
-  Handlebars.registerHelper = function(helperName, helperFunction) {
-    assert.equal(helperName, 'nested/nested-helper');
-    assert.equal(typeof helperFunction, 'function');
-  };
-
   compiler.registerHelper(helpersDirPath, 'nested/nested-helper.js');
+
+  assert.equal(typeof Handlebars.helpers['nested/nested-helper'], 'function', 'registers the helper with Handlebars');
 });
 
 test('registerHelpers registers helpers with Handlebars', function(assert) {
-  assert.expect(7);
+  assert.expect(helperFixtureNames.length);
 
   var compiler = new Compiler(appRoot);
-  var count = 0;
-
-  Handlebars.registerHelper = function(helperName, helperFunction) {
-    assert.ok(typeof helperName === 'string');
-    assert.ok(typeof helperFunction === 'function');
-    count++;
-  };
 
   compiler.registerHelpers(helpersDirPath);
-  assert.equal(count, helperFixtureFiles.length, 'registerHelper is called for each helper in the helpersDirPath');
+
+  var helpers = Object.keys(Handlebars.helpers);
+  helpers.forEach(function(helper) {
+    assert.equal(typeof Handlebars.helpers[helper], 'function', 'registers the helper with Handlebars');
+  });
 });
 
-test('registerPartial calls Handlebars.registerPartial with the correct arguements', function(assert) {
-  assert.expect(2);
+test('registerPartial registers a partial with Handlebars', function(assert) {
+  assert.expect(1);
 
   var compiler = new Compiler(appRoot);
 
-  Handlebars.registerPartial = function(partialName, partialString) {
-    assert.equal(partialName, 'footer');
-    assert.equal(partialString, '<p>This is my foot.</p>\n');
-  };
-
   compiler.registerPartial(partialsDirPath, 'footer.hbs');
+
+  assert.equal(typeof Handlebars.partials['footer'], 'string', 'registers the partial with Handlebars');
 });
 
 test('registerPartial registers the correct name for a nested partial', function(assert) {
-  assert.expect(2);
+  assert.expect(1);
 
   var compiler = new Compiler(appRoot);
 
-  Handlebars.registerPartial = function(partialName, partialString) {
-    assert.equal(partialName, 'nested/nested-partial');
-    assert.equal(partialString, '<p>I am a nested partial.</p>\n');
-  };
-
   compiler.registerPartial(partialsDirPath, 'nested/nested-partial.hbs');
+
+  assert.equal(typeof Handlebars.partials['nested/nested-partial'], 'string', 'registers the partial with Handlebars');
 });
 
 test('registerPartials registers partials with Handlebars', function(assert) {
-  assert.expect(7);
+  assert.expect(partialFixtureNames.length);
 
   var compiler = new Compiler(appRoot);
-  var count = 0;
-
-  Handlebars.registerPartial = function(partialName, partialString) {
-    assert.ok(typeof partialName === 'string');
-    assert.ok(typeof partialString === 'string');
-    count++;
-  };
 
   compiler.registerPartials(partialsDirPath);
-  assert.equal(count, partialFixtureFiles.length, 'registerPartial is called for each partial in the partialsDirPath');
+
+  var partials = Object.keys(Handlebars.partials);
+  partials.forEach(function(partial) {
+    assert.equal(typeof Handlebars.partials[partial], 'string', 'registers the partial with Handlebars');
+  });
 });
 
 
