@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/linstula/ember-cli-static-pages.svg?branch=master)](https://travis-ci.org/linstula/ember-cli-static-pages)
+
 # This addon is not ready for use yet
 
 # Ember-cli-static-pages
