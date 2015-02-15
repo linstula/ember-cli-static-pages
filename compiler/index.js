@@ -4,7 +4,7 @@ var fs = require('fs');
 var path = require('path');
 
 function Compiler(rootPath) {
-  this.rootPath = rootPath;
+  this.rootPath = path.resolve(rootPath);
 }
 
 Compiler.prototype.collectInputFilePaths = function(dirPath, type) {
