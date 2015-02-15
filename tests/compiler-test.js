@@ -1,22 +1,15 @@
-/* globals require, QUnit, test, process */
+/* globals require, QUnit, process */
 
 var Compiler = require('../compiler');
 var handlebars = require('handlebars');
 var path = require('path');
 
 var module = QUnit.module;
-var ok = QUnit.ok;
-var equal = QUnit.equal;
+var test = QUnit.test;
 
 var templatesDirPath = '/fixtures/templates/';
 var helpersDirPath = '/fixtures/helpers/';
 var partialsDirPath = '/fixtures/partials/';
-var helperTitlePath = '/fixtures/helpers/title-helper.js';
-var partialFooterPath = '/fixtures/partials/footer.hbs';
-var basicTemplatePath = '/fixtures/templates/template.hbs';
-var templateWithPartialPath = '/fixtures/templates/template-with-partials.hbs';
-var nestedHelperPath = '/fixtures/helpers/nested/nested-helper.js';
-var nestedTemplatePath = '/fixtures/templates/nested/nested-template.hbs';
 
 var helperFixtureFiles = ['nested/nested-helper.js', 'other-helper.js', 'title-helper.js'];
 var partialFixtureFiles = ['footer.hbs', 'nested/nested-partial.hbs', 'other-partial.hbs'];
