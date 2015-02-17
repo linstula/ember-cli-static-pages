@@ -3,8 +3,8 @@
 
 var fs = require('fs');
 var path = require('path');
-
 var cleanBaseURL = require('./utils/clean-base-url');
+var Compiler = require('./compiler');
 
 function notRequestToBaseURL(baseURL, requestPath) {
   var baseURLRegexp = new RegExp('^' + baseURL);
@@ -13,6 +13,17 @@ function notRequestToBaseURL(baseURL, requestPath) {
 
 module.exports = {
   name: 'ember-cli-static-pages',
+
+  included: function(app) {
+    var root = app.project.root;
+
+    var compiler = new Compiler(root);
+    var templatesDir = 'pages/templates';
+
+    if (fs.existsSync(path.join(compiler.rootPath, templatesDir))) {
+      compiler.compileTemplates('pages/templates/');
+    }
+  },
 
   serverMiddleware: function(config) {
     var app = config.app;
@@ -23,7 +34,7 @@ module.exports = {
 
       if (notRequestToBaseURL(baseURL, req.path)) {
         var filePath = path.join(config.options.project.root, config.options.outputPath, req.url)
-        if (fs.existsSync(filePath)) {
+        if (filePath[filePath.length - 1] !== '/' && fs.existsSync(filePath)) {
           res.send(fs.readFileSync(filePath, 'utf8'));
         }
       }
