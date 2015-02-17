@@ -1,6 +1,6 @@
 {
   "name": "ember-cli-static-pages",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "compile static html files from handlebars templates and serve them along side your ember app.",
   "directories": {
     "doc": "doc",
