@@ -49,12 +49,22 @@ Compiler.prototype.registerPartials = function(partialsDirPath) {
 };
 
 Compiler.prototype.compileHTMLFromTemplate = function(filePath) {
-  var templatePath = path.join(this.rootPath + filePath);
+  var templatePath = path.join(this.rootPath, filePath);
   var templateString = fs.readFileSync(templatePath, 'utf8');
 
   var template = Handlebars.compile(templateString);
 
   return template();
+};
+
+Compiler.prototype.compileTemplates = function(templatesDirPath) {
+  var templateFiles = this.collectInputFilePaths(templatesDirPath, '.hbs');
+
+  for (var i = 0; i < templateFiles.length; i++) {
+    var htmlString = this.compileHTMLFromTemplate(path.join(templatesDirPath, templateFiles[i]));
+    var htmlFilePath = templateFiles[i].replace('.hbs', '.html');
+    fs.writeFileSync(path.join(this.rootPath, 'public/', htmlFilePath), htmlString);
+  }
 };
 
 module.exports = Compiler;
