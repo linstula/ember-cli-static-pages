@@ -1,4 +1,4 @@
-/* globals require, QUnit, process */
+/* globals require, QUnit */
 
 var Compiler = require('../compiler');
 var Handlebars = require('handlebars');
@@ -28,16 +28,8 @@ function cleanupHandlebarsRegistries() {
 module('compiler', {
   beforeEach: function() {
     cleanupHandlebarsRegistries();
-    appRoot = process.cwd() + '/tests/dummy/';
+    appRoot = 'tests/dummy/';
   }
-});
-
-test('saves root from constructor param', function(assert) {
-  assert.expect(1);
-
-  var compiler = new Compiler('some-path/');
-
-  assert.equal(compiler.rootPath, 'some-path/');
 });
 
 test('registerHelper registers a helper with Handlebars', function(assert) {
