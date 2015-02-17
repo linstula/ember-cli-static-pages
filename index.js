@@ -20,7 +20,7 @@ module.exports = {
     var compiler = new Compiler(root);
     var helpersDirPath = 'pages/helpers';
     var partialsDirPath = 'pages/partials';
-    var templatesDir = 'pages/templates';
+    var templatesDirPath = 'pages/templates';
 
     compiler.registerHelpers(helpersDirPath);
     compiler.registerPartials(partialsDirPath);
