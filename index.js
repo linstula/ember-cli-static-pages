@@ -18,11 +18,13 @@ module.exports = {
     var root = app.project.root;
 
     var compiler = new Compiler(root);
+    var helpersDirPath = 'pages/helpers';
+    var partialsDirPath = 'pages/partials';
     var templatesDir = 'pages/templates';
 
-    if (fs.existsSync(path.join(compiler.rootPath, templatesDir))) {
-      compiler.compileTemplates('pages/templates/');
-    }
+    compiler.registerHelpers(helpersDirPath);
+    compiler.registerPartials(partialsDirPath);
+    compiler.compileTemplates(templatesDirPath);
   },
 
   serverMiddleware: function(config) {

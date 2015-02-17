@@ -9,6 +9,11 @@ function Compiler(rootPath) {
 
 Compiler.prototype.collectInputFilePaths = function(dirPath, type) {
   var inputPath = path.join(this.rootPath, dirPath);
+
+  if (!fs.existsSync(inputPath)) {
+    return [];
+  }
+
   var filePaths = walkSync(inputPath).filter(function(filePath) {
     return filePath.substr(filePath.length - type.length) === type;
   });
