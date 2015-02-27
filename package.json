@@ -34,7 +34,8 @@
     "express": "^4.8.5",
     "glob": "^4.0.5",
     "qunit-extras": "^1.4.1",
-    "qunitjs": "^1.17.1"
+    "qunitjs": "^1.17.1",
+    "rimraf": "^2.2.8"
   },
   "keywords": [
     "ember-addon",

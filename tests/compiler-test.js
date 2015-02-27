@@ -7,9 +7,9 @@ var path = require('path');
 var module = QUnit.module;
 var test = QUnit.test;
 
-var templatesDirPath = '/fixtures/templates/';
-var helpersDirPath = '/fixtures/helpers/';
-var partialsDirPath = '/fixtures/partials/';
+var templatesDirPath = '/templates/';
+var helpersDirPath = '/helpers/';
+var partialsDirPath = '/partials/';
 
 var helperFixtureFiles = ['nested/nested-helper.js', 'other-helper.js', 'title-helper.js'];
 var partialFixtureFiles = ['footer.hbs', 'nested/nested-partial.hbs', 'other-partial.hbs'];
@@ -18,7 +18,7 @@ var templateFixtureFiles = ['other-template.hbs', 'template-with-helper-and-part
 var helperFixtureNames = ['nested/nested-helper', 'other-helper', 'title-helper'];
 var partialFixtureNames = ['footer', 'nested/nested-partial', 'other-partial'];
 
-var appRoot;
+var compiler;
 
 function cleanupHandlebarsRegistries() {
   Handlebars.helpers = {};
@@ -28,14 +28,16 @@ function cleanupHandlebarsRegistries() {
 module('compiler', {
   beforeEach: function() {
     cleanupHandlebarsRegistries();
-    appRoot = 'tests/dummy/';
+
+    var appRoot = 'tests/dummy/';
+    var staticPagesRoot = '/static-pages';
+
+    compiler = new Compiler(appRoot, staticPagesRoot);
   }
 });
 
 test('registerHelper registers a helper with Handlebars', function(assert) {
   assert.expect(1);
-
-  var compiler = new Compiler(appRoot);
 
   compiler.registerHelper(helpersDirPath, 'title-helper.js');
 
@@ -45,8 +47,6 @@ test('registerHelper registers a helper with Handlebars', function(assert) {
 test('registerHelper registers the correct name for a nested helper', function(assert) {
   assert.expect(1);
 
-  var compiler = new Compiler(appRoot);
-
   compiler.registerHelper(helpersDirPath, 'nested/nested-helper.js');
 
   assert.equal(typeof Handlebars.helpers['nested/nested-helper'], 'function', 'registers the helper with Handlebars');
@@ -54,8 +54,6 @@ test('registerHelper registers the correct name for a nested helper', function(a
 
 test('registerHelpers registers helpers with Handlebars', function(assert) {
   assert.expect(helperFixtureNames.length);
-
-  var compiler = new Compiler(appRoot);
 
   compiler.registerHelpers(helpersDirPath);
 
@@ -68,8 +66,6 @@ test('registerHelpers registers helpers with Handlebars', function(assert) {
 test('registerPartial registers a partial with Handlebars', function(assert) {
   assert.expect(1);
 
-  var compiler = new Compiler(appRoot);
-
   compiler.registerPartial(partialsDirPath, 'footer.hbs');
 
   assert.equal(typeof Handlebars.partials['footer'], 'string', 'registers the partial with Handlebars');
@@ -78,8 +74,6 @@ test('registerPartial registers a partial with Handlebars', function(assert) {
 test('registerPartial registers the correct name for a nested partial', function(assert) {
   assert.expect(1);
 
-  var compiler = new Compiler(appRoot);
-
   compiler.registerPartial(partialsDirPath, 'nested/nested-partial.hbs');
 
   assert.equal(typeof Handlebars.partials['nested/nested-partial'], 'string', 'registers the partial with Handlebars');
@@ -87,8 +81,6 @@ test('registerPartial registers the correct name for a nested partial', function
 
 test('registerPartials registers partials with Handlebars', function(assert) {
   assert.expect(partialFixtureNames.length);
-
-  var compiler = new Compiler(appRoot);
 
   compiler.registerPartials(partialsDirPath);
 
@@ -101,8 +93,6 @@ test('registerPartials registers partials with Handlebars', function(assert) {
 
 test('collectInputFilePaths returns an array of filePaths for the given type', function(assert) {
   assert.expect(3);
-
-  var compiler = new Compiler(appRoot);
 
   var expected = templateFixtureFiles;
   var actual = compiler.collectInputFilePaths(templatesDirPath, '.hbs');
@@ -123,8 +113,6 @@ test('collectInputFilePaths returns an array of filePaths for the given type', f
 test('compileHTMLFromTemplate returns the static HTML for a Handlebars template with no helpers or partials', function(assert) {
   assert.expect(1);
 
-  var compiler = new Compiler(appRoot);
-
   var expected = '<h1>This is a basic template</h1>\n<p>it has no helpers</p>\n<p>or partials</p>\n';
   var actual = compiler.compileHTMLFromTemplate(templatesDirPath + 'template.hbs');
 
@@ -134,7 +122,6 @@ test('compileHTMLFromTemplate returns the static HTML for a Handlebars template 
 test('compileHTMLFromTemplate returns the static HTML for a Handlebars template with partials and helpers', function(assert) {
   assert.expect(1);
 
-  var compiler = new Compiler(appRoot);
   compiler.registerPartials(partialsDirPath);
   compiler.registerHelpers(helpersDirPath);
 
