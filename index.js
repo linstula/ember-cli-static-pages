@@ -2,46 +2,47 @@
 'use strict';
 
 var fs = require('fs');
+var rimraf = require('rimraf');
 var path = require('path');
-var cleanBaseURL = require('./utils/clean-base-url');
 var Compiler = require('./compiler');
+var express = require('express');
 
-function notRequestToBaseURL(baseURL, requestPath) {
-  var baseURLRegexp = new RegExp('^' + baseURL);
-  return !(baseURLRegexp.test(requestPath) || requestPath === baseURL.substring(0, baseURL.length - 1));
+function StaticPageCompiler(appRoot, staticPagesRoot) {
+  this.inputTree = path.join(appRoot, staticPagesRoot);
+  this.compiler = new Compiler(appRoot, staticPagesRoot);
+
+  this.helpersDir = 'helpers';
+  this.partialsDir = 'partials';
+  this.templatesDir = 'templates';
+  this.fakeOutputPath = 'tmp/compiled-pages-fake';
 }
 
+StaticPageCompiler.prototype.read = function(readTree, destDir) {
+  return readTree(this.inputTree)
+    .then(function(inputPath) {
+      rimraf.sync(this.fakeOutputPath);
+      fs.mkdirSync(this.fakeOutputPath);
+
+      this.compiler.registerHelpers(this.helpersDir);
+      this.compiler.registerPartials(this.partialsDir);
+      // this.compiler.cleanup('../compiled-pages');
+      this.compiler.compileTemplates(this.templatesDir, '../compiled-pages');
+
+      return this.fakeOutputPath;
+    }.bind(this));
+};
+StaticPageCompiler.prototype.cleanup = function() { };
+
 module.exports = {
-  name: 'ember-cli-static-pages',
+  name: 'static-compiler',
 
-  included: function(app) {
-    var root = app.project.root;
-
-    var compiler = new Compiler(root);
-    var helpersDirPath = 'pages/helpers';
-    var partialsDirPath = 'pages/partials';
-    var templatesDirPath = 'pages/templates';
-
-    compiler.registerHelpers(helpersDirPath);
-    compiler.registerPartials(partialsDirPath);
-    compiler.compileTemplates(templatesDirPath);
+  treeForPublic: function() {
+    return new StaticPageCompiler(this.project.root, '/static-pages');
   },
 
   serverMiddleware: function(config) {
     var app = config.app;
-    var options = config.options;
 
-    app.use(function(req, res, next) {
-      var baseURL = cleanBaseURL(options.baseURL);
-
-      if (notRequestToBaseURL(baseURL, req.path)) {
-        var filePath = path.join(config.options.project.root, config.options.outputPath, req.url)
-        if (filePath[filePath.length - 1] !== '/' && fs.existsSync(filePath)) {
-          res.send(fs.readFileSync(filePath, 'utf8'));
-        }
-      }
-
-      next();
-    })
+    app.use(express.static('compiled-pages'));
   }
 };
