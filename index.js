@@ -1,15 +1,18 @@
 /* jshint node: true */
 'use strict';
 
-var fs = require('fs');
-var rimraf = require('rimraf');
+var fs = require('fs-extra');
 var path = require('path');
 var Compiler = require('./compiler');
 var express = require('express');
 
-function StaticPageCompiler(appRoot, staticPagesRoot) {
+function StaticPageCompiler(appRoot, staticPagesRoot, outputPath) {
   this.inputTree = path.join(appRoot, staticPagesRoot);
-  this.compiler = new Compiler(appRoot, staticPagesRoot);
+  this.compiler = new Compiler({
+    appRoot: appRoot,
+    staticPagesRoot: staticPagesRoot,
+    outputPath: outputPath
+  });
 
   this.helpersDir = 'helpers';
   this.partialsDir = 'partials';
@@ -20,13 +23,11 @@ function StaticPageCompiler(appRoot, staticPagesRoot) {
 StaticPageCompiler.prototype.read = function(readTree, destDir) {
   return readTree(this.inputTree)
     .then(function(inputPath) {
-      rimraf.sync(this.fakeOutputPath);
+      fs.removeSync(this.fakeOutputPath);
       fs.mkdirSync(this.fakeOutputPath);
 
-      this.compiler.registerHelpers(this.helpersDir);
-      this.compiler.registerPartials(this.partialsDir);
-      // this.compiler.cleanup('../compiled-pages');
-      this.compiler.compileTemplates(this.templatesDir, '../compiled-pages');
+      this.compiler.cleanup();
+      this.compiler.compileTemplates(this.templatesDir);
 
       return this.fakeOutputPath;
     }.bind(this));
@@ -37,7 +38,7 @@ module.exports = {
   name: 'static-compiler',
 
   treeForPublic: function() {
-    return new StaticPageCompiler(this.project.root, '/static-pages');
+    return new StaticPageCompiler(this.project.root, 'static-pages', 'compiled-pages');
   },
 
   serverMiddleware: function(config) {
