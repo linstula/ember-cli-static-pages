@@ -34,8 +34,7 @@
     "express": "^4.8.5",
     "glob": "^4.0.5",
     "qunit-extras": "^1.4.1",
-    "qunitjs": "^1.17.1",
-    "rimraf": "^2.2.8"
+    "qunitjs": "^1.17.1"
   },
   "keywords": [
     "ember-addon",
@@ -48,6 +47,7 @@
     "configPath": "tests/dummy/config"
   },
   "dependencies": {
+    "fs-extra": "^0.16.5",
     "handlebars": "^3.0.0",
     "walk-sync": "^0.1.3"
   }

@@ -1,12 +1,12 @@
 var Handlebars = require('handlebars');
 var walkSync = require('walk-sync');
-var fs = require('fs');
+var fs = require('fs-extra');
 var path = require('path');
-var rimraf = require('rimraf');
 
-function Compiler(appRoot, staticPagesRoot) {
-  this.appRoot = path.resolve(appRoot);
-  this.staticPagesRoot = path.join(this.appRoot, staticPagesRoot);
+function Compiler(options) {
+  this.appRoot = path.resolve(options.appRoot);
+  this.staticPagesRoot = path.join(this.appRoot, options.staticPagesRoot);
+  this.outputPath = path.join(this.appRoot, options.outputPath);
 }
 
 Compiler.prototype.collectInputFilePaths = function(dirPath, type) {
@@ -24,24 +24,24 @@ Compiler.prototype.collectInputFilePaths = function(dirPath, type) {
   return filePaths;
 };
 
-Compiler.prototype.registerHelper = function(dirPath, filePath) {
-  var inputPath = path.join(this.staticPagesRoot, dirPath, filePath);
+Compiler.prototype.registerHelper = function(helperDir, filePath) {
+  var helperPath = path.join(helperDir, filePath);
   var name = filePath.substring(0, filePath.length - 3) // remove extension from path
 
-  var helperFunction = require(inputPath);
+  var helperFunction = require(helperPath);
   Handlebars.registerHelper(name, helperFunction);
 };
 
-Compiler.prototype.registerPartial = function(dirPath, filePath) {
-  var inputPath = path.join(this.staticPagesRoot, dirPath, filePath);
+Compiler.prototype.registerPartial = function(partialDir, filePath) {
+  var partialPath = path.join(partialDir, filePath);
   var name = filePath.substring(0, filePath.length - 4) // remove extension from path
 
-  var partialString = fs.readFileSync(inputPath, 'utf8');
+  var partialString = fs.readFileSync(partialPath, 'utf8');
   Handlebars.registerPartial(name, partialString);
 };
 
 Compiler.prototype.registerHelpers = function(helpersDirPath) {
-  var helperFiles = this.collectInputFilePaths(helpersDirPath, '.js');
+  var helperFiles = this.collectInputFilePaths('helpers', '.js');
 
   for (var i = 0; i < helperFiles.length; i++) {
     this.registerHelper(helpersDirPath, helperFiles[i]);
@@ -49,7 +49,7 @@ Compiler.prototype.registerHelpers = function(helpersDirPath) {
 };
 
 Compiler.prototype.registerPartials = function(partialsDirPath) {
-  var partialFiles = this.collectInputFilePaths(partialsDirPath, '.hbs');
+  var partialFiles = this.collectInputFilePaths('partials', '.hbs');
 
   for (var i = 0; i < partialFiles.length; i++) {
     this.registerPartial(partialsDirPath, partialFiles[i]);
@@ -65,10 +65,12 @@ Compiler.prototype.compileHTMLFromTemplate = function(filePath) {
   return template();
 };
 
-Compiler.prototype.compileTemplates = function(templatesDirPath, outputDir) {
-  debugger
-  var outputBasePath = path.join(this.staticPagesRoot, outputDir);
-  var templateFiles = this.collectInputFilePaths(templatesDirPath, '.hbs');
+Compiler.prototype.compileTemplates = function(templatesDirPath) {
+  this.registerHelpers(path.join(this.staticPagesRoot, 'helpers'));
+  this.registerPartials(path.join(this.staticPagesRoot, 'partials'));
+
+  var outputBasePath = path.join(this.outputPath);
+  var templateFiles = this.collectInputFilePaths('templates', '.hbs');
 
   if (!fs.existsSync(outputBasePath)) {
     fs.mkdirSync(outputBasePath);
@@ -78,14 +80,22 @@ Compiler.prototype.compileTemplates = function(templatesDirPath, outputDir) {
     var htmlString = this.compileHTMLFromTemplate(path.join(templatesDirPath, templateFiles[i]));
     var htmlFilePath = templateFiles[i].replace('.hbs', '.html');
 
-    fs.writeFileSync(path.join(outputBasePath, htmlFilePath), htmlString);
+    var pathParts = htmlFilePath.split('/');
+
+    if (pathParts.length === 1) {
+      fs.writeFileSync(path.join(outputBasePath, pathParts[0]), htmlString);
+    } else {
+      var directories = pathParts.slice(0, (pathParts.length - 1)).join('/');
+      var file = pathParts[pathParts.length - 1];
+
+      fs.mkdirsSync(path.join(outputBasePath, directories));
+      fs.writeFileSync(path.join(outputBasePath, directories, pathParts[pathParts.length - 1]), htmlString);
+    }
   }
 };
 
-Compiler.prototype.cleanup = function(outputDir) {
-  var outputBasePath = path.join(this.staticPagesRoot, outputDir);
-
-  rimraf.sync(outputBasePath);
+Compiler.prototype.cleanup = function() {
+  fs.removeSync(this.outputPath);
 };
 
 module.exports = Compiler;
